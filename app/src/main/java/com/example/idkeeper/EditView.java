@@ -27,7 +27,7 @@ public class EditView extends AppCompatActivity {//Comitted
     private Button btResize, btSave;
 
     private PdfDocument pdfDoc;
-    private databaseHelper2 db2;
+private databaseHelper2 db2;
     private Bitmap bitmap;
 
     @Override
