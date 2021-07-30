@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity{
                         startActivity(docViewIntent);
                     }else {
                         Toast.makeText(MainActivity.this, "incorrect Pin", Toast.LENGTH_SHORT).show();
+                        etPin.setText("");
                     }
                 }else{
                     Toast.makeText(MainActivity.this, "enter the pin", Toast.LENGTH_SHORT).show();

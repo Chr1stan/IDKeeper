@@ -1,6 +1,5 @@
 
 package com.example.idkeeper;
-
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +47,8 @@ import com.google.android.material.navigation.NavigationView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -66,11 +67,10 @@ public class DocView extends AppCompatActivity {
     private String currentPhotoPath;
 
     private boolean fabExpanded;
-    private FloatingActionButton btAddId, btTakePhoto, btGallery, btConvertToPdf;
+    private FloatingActionButton btAddId, btTakePhoto, btGallery;
 
     private void closeSubMenusFab(){
         btAddId.setImageResource(R.drawable.ic_baseline_add_24);
-        //btConvertToPdf.setVisibility(View.INVISIBLE);
         btTakePhoto.setVisibility(View.INVISIBLE);
         btGallery.setVisibility(View.INVISIBLE);
         fabExpanded = false;
@@ -78,13 +78,12 @@ public class DocView extends AppCompatActivity {
 
     private void openSubMenusFab(){
         btAddId.setImageResource(R.drawable.ic_baseline_close_24);
-        //btConvertToPdf.setVisibility(View.VISIBLE);
         btTakePhoto.setVisibility(View.VISIBLE);
         btGallery.setVisibility(View.VISIBLE);
         fabExpanded = true;
     }
 
-    public Bitmap bitmap;
+    private Bitmap bitmap;
     private int images[];
 
     @Override
@@ -99,11 +98,8 @@ public class DocView extends AppCompatActivity {
                 File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                 try {
                     File imagefile = File.createTempFile("image", ".jpg", dir);
-
                     currentPhotoPath = imagefile.getAbsolutePath();
-
                     Uri imageUri = FileProvider.getUriForFile(DocView.this, "com.example.idkeeper.fileprovider", imagefile);
-
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     //intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                     startActivityForResult(intent , 1);
@@ -111,20 +107,22 @@ public class DocView extends AppCompatActivity {
             }
         });
 
-        Intent intentGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        Intent intentGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        btGallery = this.findViewById(R.id.btGallery);
+//        btGallery.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                try{startActivityForResult(intentGallery, 2);}catch (Exception e){}
+//            }
+//        });
         btGallery = this.findViewById(R.id.btGallery);
         btGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{startActivityForResult(intentGallery, 2);}catch (Exception e){}
-            }
-        });
-
-        btConvertToPdf = this.findViewById(R.id.btConvertToPDF);
-        btConvertToPdf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                /*convertToPDF(bitmap);*/
+                try{Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    startActivityForResult(Intent.createChooser(intent, "pick your id image"), 2);
+                }catch (Exception e){}
             }
         });
 
@@ -162,7 +160,7 @@ public class DocView extends AppCompatActivity {
         if(cursor2.getCount() == 0){
             Toast.makeText(this, "No ID's", Toast.LENGTH_SHORT).show();
             arrayList.add("CLICK BELLOW TO ADD DOCUMENTS");
-        }else{
+           }else{
             cursor2.moveToFirst();
             arrayList.add(cursor2.getString(1));
             while (cursor.moveToNext()){
@@ -225,13 +223,25 @@ public class DocView extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent returnIntent) {
-        super.onActivityResult(requestCode, resultCode, returnIntent);
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //for camera
         if(requestCode == 1 && resultCode == RESULT_OK) {
             bitmap = BitmapFactory.decodeFile(currentPhotoPath);
             Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
-            //editView_intent.putExtra("bitmap", bitmap);
+            editView_intent.putExtra("bitmap", bitmap);
             startActivity(editView_intent);
+        }
+        //for gallery
+        if(requestCode == 2 && resultCode == RESULT_OK) {
+            try{
+                InputStream inputStream = getContentResolver().openInputStream(data.getData());
+                bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+                Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
+//                editView_intent.putExtra("bitmap", bitmap);
+                editView_intent.putExtra("shit", "thisIsPissingMeOFF");
+                startActivity(editView_intent);
+            }catch (Exception e){e.printStackTrace();}
         }
     }
 
@@ -291,7 +301,7 @@ class MainAdapter extends BaseAdapter {
         }
         AlertDialog.Builder adb = new AlertDialog.Builder(context);
         adb.setTitle("ID Code");
-        try{adb.setMessage("Your "+cursor.getString(1)+" has code:\n"+cursor.getString(2).trim());}catch (Exception e){return "couldnt display message";}
+        try{adb.setMessage(cursor.getString(5)+"Your "+cursor.getString(1)+" has code:\n"+cursor.getString(2).trim());}catch (Exception e){return "couldnt display message";}
         adb.setPositiveButton("Ok", null);
         adb.setNegativeButton("view", null);
         adb.show();

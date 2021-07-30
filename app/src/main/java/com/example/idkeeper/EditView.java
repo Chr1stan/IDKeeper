@@ -3,6 +3,7 @@ package com.example.idkeeper;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,23 +21,25 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class EditView extends AppCompatActivity {
+public class EditView extends AppCompatActivity {//Comitted
 
     private EditText etIdType, etIdCode, etNacionality, etExpDate;
     private Button btResize, btSave;
 
     private PdfDocument pdfDoc;
-    private databaseHelper2 db;
+    private databaseHelper2 db2;
     private Bitmap bitmap;
-
-    private ImageView imageView1, imageView2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_view);
 
-        if(getSupportActionBar() != null){getSupportActionBar().hide();}
+        db2 = new databaseHelper2(this);
+        Cursor cursor2 = db2.getID();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         etIdCode = (findViewById(R.id.etIdCode));
         etIdType = (findViewById(R.id.etIdType));
@@ -47,11 +50,15 @@ public class EditView extends AppCompatActivity {
         btResize.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(EditView.this, "To crop or resize the image", Toast.LENGTH_SHORT).show();
+                try {
+                    Toast.makeText(EditView.this, ""+cursor2.getString(5), Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(EditView.this, "Error retrieving bitmap", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
             }
         });
 
-        db = new databaseHelper2(this);
 
         btSave = findViewById(R.id.btSave);
         btSave.setOnClickListener(new View.OnClickListener() {
@@ -62,15 +69,20 @@ public class EditView extends AppCompatActivity {
                 String nacionality = etNacionality.getText().toString().trim();
                 String expDate = etExpDate.getText().toString().trim();
 
-                //Intent intent = getIntent();
-                //bitmap = intent.getParcelableExtra("bitmap");
-                boolean addID = db.addID(idtype, idCode, nacionality, expDate);
-                if (addID){
+//                Intent intent = getIntent();
+//                String bitmapString = intent.getStringExtra("shit");
+//                String bitmapString;
+//                try {
+//                    bitmap = getIntent().getParcelableExtra("bitmap");
+//                    bitmapString = bitmap.toString();
+//                }catch (Exception e){bitmapString = "null";}
+                boolean addID = db2.addID(idtype, idCode, nacionality, expDate, "shit");
+                if (addID) {
                     //convertToPDF(bitmap);
                     Toast.makeText(EditView.this, "Saved Sucessfuly", Toast.LENGTH_SHORT).show();
                     Intent docView_intent = new Intent(getApplicationContext(), DocView.class);
                     startActivity(docView_intent);
-                }else{
+                } else {
                     Toast.makeText(EditView.this, "Error while saving file", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -78,7 +90,7 @@ public class EditView extends AppCompatActivity {
     }
 
 
-    public void convertToPDF(Bitmap bitmap){
+    public void convertToPDF(Bitmap bitmap) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             pdfDoc = new PdfDocument();
             PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), 1).create();
@@ -100,7 +112,9 @@ public class EditView extends AppCompatActivity {
                 File file = File.createTempFile("converted", ".pdf", dir);
                 FileOutputStream fileOut = new FileOutputStream(file);
                 pdfDoc.writeTo(fileOut);
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             pdfDoc.close();
         }
     }

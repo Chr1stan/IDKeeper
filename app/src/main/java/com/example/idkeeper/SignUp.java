@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SignUp extends AppCompatActivity {
-    
+
     private Button btSignUp;
     private TextView tvAppName;
     private EditText etName, etPin, etPin2;
@@ -23,12 +23,14 @@ public class SignUp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        if(getSupportActionBar() != null){getSupportActionBar().hide();}
-        
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         tvAppName = findViewById(R.id.tvAppName);
-            etName = findViewById(R.id.etName);
-            etPin = (EditText)findViewById(R.id.etPin);
-            etPin2 = (EditText)findViewById(R.id.etPin2);
+        etName = findViewById(R.id.etName);
+        etPin = (EditText) findViewById(R.id.etPin);
+        etPin2 = (EditText) findViewById(R.id.etPin2);
 
         db = new databaseHelper(this);
 
@@ -45,9 +47,9 @@ public class SignUp extends AppCompatActivity {
 
                     if (etPin.getText().toString().trim().equalsIgnoreCase(etPin2.getText().toString().trim())) {
                         String pin = etPin.getText().toString().trim();
-                        if(name.isEmpty() || surname.isEmpty()) {
+                        if (name.isEmpty() || surname.isEmpty()) {
                             Toast.makeText(SignUp.this, "Enter full Name", Toast.LENGTH_SHORT).show();
-                        }else{
+                        } else {
                             boolean insert = db.addUser(name, surname, pin);
                             if (insert) {
                                 startActivity(logIntent);
@@ -61,9 +63,11 @@ public class SignUp extends AppCompatActivity {
                         etPin2.setText("");
                         Toast.makeText(SignUp.this, "The two pin doesn't match", Toast.LENGTH_SHORT).show();
                     }
-                }catch (Exception e){e.printStackTrace();}
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
-        
+
     }
 }
