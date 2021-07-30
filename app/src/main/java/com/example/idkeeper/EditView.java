@@ -21,7 +21,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class EditView extends AppCompatActivity {//Comitted
+public class EditView extends AppCompatActivity {//Comitted2
 
     private EditText etIdType, etIdCode, etNacionality, etExpDate;
     private Button btResize, btSave;
