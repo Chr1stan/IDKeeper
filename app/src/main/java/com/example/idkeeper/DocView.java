@@ -122,20 +122,14 @@ public class DocView extends AppCompatActivity {
                 try{Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     startActivityForResult(Intent.createChooser(intent, "pick your id image"), 2);
-                }catch (Exception e){}
+                }catch (Exception e){e.printStackTrace();}
             }
         });
 
         btAddId =  this.findViewById(R.id.btAddId);
         btAddId.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (fabExpanded == true){
-                    closeSubMenusFab();
-                }else{
-                    openSubMenusFab();
-                }
-            }
+            public void onClick(View v) {if (fabExpanded){closeSubMenusFab();}else{openSubMenusFab();}}
         });
 
         db = new databaseHelper(this);
@@ -236,10 +230,9 @@ public class DocView extends AppCompatActivity {
         if(requestCode == 2 && resultCode == RESULT_OK) {
             try{
                 InputStream inputStream = getContentResolver().openInputStream(data.getData());
-                bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+                bitmap = BitmapFactory.decodeStream(inputStream);
                 Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
-//                editView_intent.putExtra("bitmap", bitmap);
-                editView_intent.putExtra("shit", "thisIsPissingMeOFF");
+                editView_intent.putExtra("bitmap", bitmap);
                 startActivity(editView_intent);
             }catch (Exception e){e.printStackTrace();}
         }
