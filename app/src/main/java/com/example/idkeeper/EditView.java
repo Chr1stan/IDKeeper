@@ -1,10 +1,12 @@
 package com.example.idkeeper;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -27,16 +29,17 @@ public class EditView extends AppCompatActivity {//Comitted2
     private Button btResize, btSave;
 
     private PdfDocument pdfDoc;
-private databaseHelper2 db2;
     private Bitmap bitmap;
+
+    private String idtype;
+    private String idCode;
+    private String expDate;
+    private String nacionality;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_view);
-
-        db2 = new databaseHelper2(this);
-        Cursor cursor2 = db2.getID();
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
@@ -51,10 +54,9 @@ private databaseHelper2 db2;
             @Override
             public void onClick(View v) {
                 try {
-                    Toast.makeText(EditView.this, ""+cursor2.getString(5), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditView.this, "BRrr", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(EditView.this, "Error retrieving bitmap", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
                 }
             }
         });
@@ -64,58 +66,27 @@ private databaseHelper2 db2;
         btSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String idtype = etIdType.getText().toString().trim();
-                String idCode = etIdCode.getText().toString().trim();
-                String nacionality = etNacionality.getText().toString().trim();
-                String expDate = etExpDate.getText().toString().trim();
-
-//                Intent intent = getIntent();
-//                String bitmapString = intent.getStringExtra("shit");
-//                String bitmapString;
-//                try {
-//                    bitmap = getIntent().getParcelableExtra("bitmap");
-//                    bitmapString = bitmap.toString();
-//                }catch (Exception e){bitmapString = "null";}
-                boolean addID = db2.addID(idtype, idCode, nacionality, expDate, "shit");
-                if (addID) {
-                    //convertToPDF(bitmap);
-                    Toast.makeText(EditView.this, "Saved Sucessfuly", Toast.LENGTH_SHORT).show();
-                    Intent docView_intent = new Intent(getApplicationContext(), DocView.class);
-                    startActivity(docView_intent);
-                } else {
-                    Toast.makeText(EditView.this, "Error while saving file", Toast.LENGTH_SHORT).show();
-                }
+                idtype = etIdType.getText().toString().trim();
+                idCode = etIdCode.getText().toString().trim();
+                nacionality = etNacionality.getText().toString().trim();
+                expDate = etExpDate.getText().toString().trim();
+                setResult(3);
             }
         });
     }
 
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    public void convertToPDF(Bitmap bitmap) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            pdfDoc = new PdfDocument();
-            PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), 1).create();
-
-            PdfDocument.Page page = pdfDoc.startPage(pInfo);
-            Canvas canvas = page.getCanvas();
-            Paint paint = new Paint();
-            paint.setColor(Color.parseColor("#F4AE59"));
-            canvas.drawPaint(paint);
-
-            bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
-            paint.setColor(Color.BLUE);
-            canvas.drawBitmap(bitmap, 0, 0, null);
-            pdfDoc.finishPage(page);
-
-            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-
-            try {
-                File file = File.createTempFile("converted", ".pdf", dir);
-                FileOutputStream fileOut = new FileOutputStream(file);
-                pdfDoc.writeTo(fileOut);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            pdfDoc.close();
+        if (requestCode == 3 && resultCode == RESULT_OK) {
+            Intent returndData = new Intent(getApplicationContext(), DocView.class);
+            returndData.putExtra("ID Type", idtype);
+            returndData.putExtra("ID Code", idCode);
+            returndData.putExtra("Exp Date", expDate);
+            returndData.putExtra("Nac", nacionality);
+            setResult(RESULT_OK, returndData);
+            startActivity(returndData);
+            finish();
         }
     }
 }

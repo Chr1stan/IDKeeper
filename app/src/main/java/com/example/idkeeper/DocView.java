@@ -1,5 +1,6 @@
 
 package com.example.idkeeper;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,14 +70,14 @@ public class DocView extends AppCompatActivity {
     private boolean fabExpanded;
     private FloatingActionButton btAddId, btTakePhoto, btGallery;
 
-    private void closeSubMenusFab(){
+    private void closeSubMenusFab() {
         btAddId.setImageResource(R.drawable.ic_baseline_add_24);
         btTakePhoto.setVisibility(View.INVISIBLE);
         btGallery.setVisibility(View.INVISIBLE);
         fabExpanded = false;
     }
 
-    private void openSubMenusFab(){
+    private void openSubMenusFab() {
         btAddId.setImageResource(R.drawable.ic_baseline_close_24);
         btTakePhoto.setVisibility(View.VISIBLE);
         btGallery.setVisibility(View.VISIBLE);
@@ -91,7 +92,7 @@ public class DocView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_doc_view);
 
-        btTakePhoto =  this.findViewById(R.id.btTakePhoto);
+        btTakePhoto = this.findViewById(R.id.btTakePhoto);
         btTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,9 +102,11 @@ public class DocView extends AppCompatActivity {
                     currentPhotoPath = imagefile.getAbsolutePath();
                     Uri imageUri = FileProvider.getUriForFile(DocView.this, "com.example.idkeeper.fileprovider", imagefile);
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    //intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                    startActivityForResult(intent , 1);
-                } catch (IOException e) {e.printStackTrace();}
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                    startActivityForResult(intent, 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -119,17 +122,26 @@ public class DocView extends AppCompatActivity {
         btGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                try {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
-                    startActivityForResult(Intent.createChooser(intent, "pick your id image"), 2);
-                }catch (Exception e){e.printStackTrace();}
+                    startActivityForResult(Intent.createChooser(intent, "Choose a image"), 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
-        btAddId =  this.findViewById(R.id.btAddId);
+        btAddId = this.findViewById(R.id.btAddId);
         btAddId.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {if (fabExpanded){closeSubMenusFab();}else{openSubMenusFab();}}
+            public void onClick(View v) {
+                if (fabExpanded) {
+                    closeSubMenusFab();
+                } else {
+                    openSubMenusFab();
+                }
+            }
         });
 
         db = new databaseHelper(this);
@@ -140,24 +152,26 @@ public class DocView extends AppCompatActivity {
 
         tvWelcome = findViewById(R.id.tvWelcome);
         tvWelcome.setVisibility(View.VISIBLE);
-        try{
-            if(cursor.getCount() == 0) {
+        try {
+            if (cursor.getCount() == 0) {
                 tvWelcome.setText("Click the button\n to add Your ID's");
-            }else{
+            } else {
                 cursor.moveToLast();
-                tvWelcome.setText("Welcome, " +cursor.getString(1)+"!");
+                tvWelcome.setText("Welcome, " + cursor.getString(1) + "!");
             }
-        }catch (Exception e){e.printStackTrace();}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        ArrayList <String> arrayList = new ArrayList<>();
+        ArrayList<String> arrayList = new ArrayList<>();
 
-        if(cursor2.getCount() == 0){
+        if (cursor2.getCount() == 0) {
             Toast.makeText(this, "No ID's", Toast.LENGTH_SHORT).show();
             arrayList.add("CLICK BELLOW TO ADD DOCUMENTS");
-           }else{
+        } else {
             cursor2.moveToFirst();
             arrayList.add(cursor2.getString(1));
-            while (cursor.moveToNext()){
+            while (cursor.moveToNext()) {
                 arrayList.add(cursor2.getString(1));
             }
         }
@@ -182,11 +196,11 @@ public class DocView extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         navView = findViewById(R.id.navView);
-        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
+        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.menuItem1:
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                         Toast.makeText(DocView.this, "Dark theme", Toast.LENGTH_SHORT).show();
@@ -196,7 +210,8 @@ public class DocView extends AppCompatActivity {
                         Toast.makeText(DocView.this, "Ligth theme", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.menuItem3:
-                        Toast.makeText(DocView.this, "Settings", Toast.LENGTH_SHORT).show();
+                        Intent settings = new Intent(getApplicationContext(), Settings.class);
+                        startActivity(settings);
                         break;
                     case R.id.menuItem4:
                         AlertDialog.Builder adb = new AlertDialog.Builder(DocView.this);
@@ -205,40 +220,22 @@ public class DocView extends AppCompatActivity {
                         adb.setPositiveButton("Ok", null);
                         adb.show();
                         break;
-                    default: break;
+                    default:
+                        break;
                 }
                 return true;
             }
         });
     }
 
-    public boolean onOptionsItemSelected(@NonNull MenuItem item){
-        if(toggle.onOptionsItemSelected(item)){return true;}
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (toggle.onOptionsItemSelected(item)) {
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        //for camera
-        if(requestCode == 1 && resultCode == RESULT_OK) {
-            bitmap = BitmapFactory.decodeFile(currentPhotoPath);
-            Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
-            editView_intent.putExtra("bitmap", bitmap);
-            startActivity(editView_intent);
-        }
-        //for gallery
-        if(requestCode == 2 && resultCode == RESULT_OK) {
-            try{
-                InputStream inputStream = getContentResolver().openInputStream(data.getData());
-                bitmap = BitmapFactory.decodeStream(inputStream);
-                Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
-                editView_intent.putExtra("bitmap", bitmap);
-                startActivity(editView_intent);
-            }catch (Exception e){e.printStackTrace();}
-        }
-    }
-
-    public void convertToPDF(Bitmap bitmap){
+    public void convertToPDF(Bitmap bitmap) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             pdfDoc = new PdfDocument();
             PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), 1).create();
@@ -257,14 +254,64 @@ public class DocView extends AppCompatActivity {
             File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
 
             try {
-                File file = File.createTempFile("converted", ".pdf", dir);
+                Cursor cursor = db2.getID();
+                File file = File.createTempFile("converted, bitmap: "+cursor.getString(5), ".pdf", dir);
                 FileOutputStream fileOut = new FileOutputStream(file);
                 pdfDoc.writeTo(fileOut);
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             pdfDoc.close();
         }
     }
+
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //for camera
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+            if (bitmap == null) {
+                Toast.makeText(this, "The bitmap is null", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
+                if(resultCode == 3 && resultCode == RESULT_OK){
+                    saveID(editView_intent.getStringExtra("ID Type"), editView_intent.getStringExtra("ID Code"), editView_intent.getStringExtra("Nac"), editView_intent.getStringExtra("Exp Date"), bitmap.toString());
+                }
+                startActivityForResult(editView_intent, 3);
+                convertToPDF(bitmap);
+            }
+        }
+        //for gallery
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(data.getData());
+                bitmap = BitmapFactory.decodeStream(inputStream);
+                if (bitmap != null) {
+                    Intent editView_intent = new Intent(getApplicationContext(), EditView.class);
+                    startActivityForResult(editView_intent, 3);
+                    if(resultCode == 3 && resultCode == RESULT_OK){
+                        saveID(editView_intent.getStringExtra("ID Type"), editView_intent.getStringExtra("ID Code"), editView_intent.getStringExtra("Nac"), editView_intent.getStringExtra("Exp Date"), bitmap.toString());
+                    }
+                    convertToPDF(bitmap);
+                } else {
+                    Toast.makeText(this, "The bitmap is null", Toast.LENGTH_SHORT).show();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean saveID(String idtype, String idCode, String expDate, String nac, String bitmap) {
+        boolean result = db2.addID(idtype, idCode, expDate, nac, bitmap);
+        if (result) {
+            return true;
+        }else{return false;}
+    }
 }
+
+
 //class for the grid view
 class MainAdapter extends BaseAdapter {
 
@@ -282,7 +329,9 @@ class MainAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() {return numberWord.length;}
+    public int getCount() {
+        return numberWord.length;
+    }
 
     @Override
     public Object getItem(int position) {
@@ -290,19 +339,29 @@ class MainAdapter extends BaseAdapter {
         Cursor cursor = db2.getID();
 
         if (cursor.getCount() != 0) {
-            try{cursor.move(position+1);}catch(Exception e){return "the cursor at this position is empty";}
+            try {
+                cursor.move(position + 1);
+            } catch (Exception e) {
+                return "the cursor at this position is empty";
+            }
         }
         AlertDialog.Builder adb = new AlertDialog.Builder(context);
         adb.setTitle("ID Code");
-        try{adb.setMessage(cursor.getString(5)+"Your "+cursor.getString(1)+" has code:\n"+cursor.getString(2).trim());}catch (Exception e){return "couldnt display message";}
+        try {
+            adb.setMessage(cursor.getString(5) + "Your " + cursor.getString(1) + " has code:\n" + cursor.getString(2).trim());
+        } catch (Exception e) {
+            return "couldnt display message";
+        }
         adb.setPositiveButton("Ok", null);
         adb.setNegativeButton("view", null);
         adb.show();
-        return position+"|"+cursor.getString(2);
+        return position + "|" + cursor.getString(2);
     }
 
     @Override
-    public long getItemId(int position) {return 0;}
+    public long getItemId(int position) {
+        return 0;
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
